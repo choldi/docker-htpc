@@ -1,0 +1,74 @@
+version: '2'
+services:
+ transmission:
+  image: choldi/transmission-openvpn
+  cap_add:
+    - NET_ADMIN
+  devices:
+    - /dev/net/tun
+  restart: always
+  ports:
+    - "9091:9091"
+    - "8989:8989"
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+  volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ./downloads:/data
+  env_file:
+    - docker-openvpn.env
+
+ jackett:
+  image: linuxserver/jackett 
+  network_mode: "service:transmission"
+  depends_on:
+   - transmission
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - ./.config:/config
+   - ./downloads:/downloads
+  environment:
+   - PUID=0
+   - GUID=0
+
+ sonarr:
+  image: linuxserver/sonarr 
+  network_mode: "service:transmission"
+  depends_on:
+   - jackett
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - ./.config/sonarr:/config
+   - /media/series/Series:/tv
+   - ./downloads:/downloads
+   - ./downloads:/data
+  environment:
+   - PUID=0
+   - GUID=0
+
+ radarr:
+  image: linuxserver/radarr
+  network_mode: "service:transmission"
+  depends_on:
+   - jackett
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - ./.config/radarr:/config
+   - /media/pel.licules/Pel.licules:/movies
+   - ./downloads:/downloads
+   - ./downloads:/data
+  environment:
+   - PUID=0
+   - GUID=0
+
+ nginx:
+  image: haugene/transmission-openvpn-proxy
+  links:
+   - transmission:sonarr
+   - transmission:radarr
+   - transmission:jackett
+  ports:
+   - "8080:8080"
+  volumes:
+   - ./.config/nginx.conf:/etc/nginx/nginx.conf:ro
