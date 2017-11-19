@@ -40,7 +40,7 @@ services:
   volumes:
    - /etc/localtime:/etc/localtime:ro
    - ./.config/sonarr:/config
-   - /media/series/Series:/tv
+   - ./tv:/tv
    - ./downloads:/downloads
    - ./downloads:/data
   environment:
@@ -55,7 +55,7 @@ services:
   volumes:
    - /etc/localtime:/etc/localtime:ro
    - ./.config/radarr:/config
-   - /media/pel.licules/Pel.licules:/movies
+   - ./movies:/movies
    - ./downloads:/downloads
    - ./downloads:/data
   environment:
